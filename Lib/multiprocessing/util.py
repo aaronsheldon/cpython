@@ -42,26 +42,25 @@ _loggers = dict()
 _log_to_stderr = False
 
 def sub_debug(msg, *args):
-    if _logger:
-        _logger.log(SUBDEBUG, msg, *args)
+    if LOGGER_NAME in _loggers:
+        _loggers[LOGGER_NAME].log(SUBDEBUG, msg, *args)
 
 def debug(msg, *args):
-    if _logger:
-        _logger.log(DEBUG, msg, *args)
+    if LOGGER_NAME in _loggers:
+        _loggers[LOGGER_NAME].log(DEBUG, msg, *args)
 
 def info(msg, *args):
-    if _logger:
-        _logger.log(INFO, msg, *args)
+    if LOGGER_NAME in _loggers:
+        _loggers[LOGGER_NAME].log(INFO, msg, *args)
 
 def sub_warning(msg, *args):
-    if _logger:
-        _logger.log(SUBWARNING, msg, *args)
+    if LOGGER_NAME in _loggers:
+        _loggers[LOGGER_NAME].log(SUBWARNING, msg, *args)
 
 def get_logger(name=None):
     '''
     Returns logger used by multiprocessing
     '''
-    global _loggers
     import logging
     
     with logging._lock:
@@ -85,7 +84,7 @@ def get_logger(name=None):
 
     return _logger
 
-def log_to_stderr(name=None, level=None):
+def log_to_stderr(level=None):
     '''
     Turn on logging and add a handler which prints to stderr
     '''
@@ -101,7 +100,7 @@ def log_to_stderr(name=None, level=None):
     if level:
         logger.setLevel(level)
     _log_to_stderr = True
-    return _logger
+    return _loggers[LOGGER_NAME]
 
 
 # Abstract socket support
