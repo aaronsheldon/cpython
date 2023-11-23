@@ -38,7 +38,7 @@ SUBWARNING = 25
 LOGGER_NAME = 'multiprocessing'
 DEFAULT_LOGGING_FORMAT = '[%(levelname)s/%(processName)s] %(message)s'
 
-_logger = None
+_loggers = dict()
 _log_to_stderr = False
 
 def sub_debug(msg, *args):
@@ -57,18 +57,23 @@ def sub_warning(msg, *args):
     if _logger:
         _logger.log(SUBWARNING, msg, *args)
 
-def get_logger():
+def get_logger(name=None):
     '''
     Returns logger used by multiprocessing
     '''
-    global _logger
+    global _loggers
     import logging
-
+    
     with logging._lock:
-        if not _logger:
 
-            _logger = logging.getLogger(LOGGER_NAME)
-            _logger.propagate = 0
+        sanitize = LOGGER_NAME + ("" if name is None else "." + str(name))
+        if santize in _loggers:
+            _logger = _loggers[sanitize]        
+        else:
+
+            _logger = logging.getLogger(sanitize)
+            _logger.propagate = sanitize != LOGGER_NAME
+            _loggers[sanitize] = _logger
 
             # XXX multiprocessing should cleanup before logging
             if hasattr(atexit, 'unregister'):
@@ -80,7 +85,7 @@ def get_logger():
 
     return _logger
 
-def log_to_stderr(level=None):
+def log_to_stderr(name=None, level=None):
     '''
     Turn on logging and add a handler which prints to stderr
     '''
